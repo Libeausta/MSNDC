@@ -1,48 +1,30 @@
-import paho.mqtt.client as paho
+import paho.mqtt.client as mqtt_client 
+import random 
 import time
-import serial
 import questionary
+ 
+broker = "broker.emqx.io" 
+ 
+def on_connect(client, userdata, flags, rc): 
+    if rc == 0: 
+        print("Connected to MQTT Broker!") 
+    else: 
+        print("Failed to connect, return code %d\n", rc) 
+ 
+client = mqtt_client.Client(f'lab_{random.randint(10000, 99999)}') 
+client.on_connect = on_connect 
+client.connect(broker) 
 
-port = "COM3"
-connection = serial.Serial(port, timeout=1)
-
-broker = "broker.emqx.io"
-client = paho.Client("client-1")
-
-print("Connecting to broker", broker)
-client.connect(broker)
-client.loop_start()
-
-def start_loop(topic):
-    start_time, end_time = 20 , 40
-    min_end_time = 30
-
-    seconds=1
-    current_end=end_time
-    cmd = '0'
-    while True:
-        if seconds==1:
-            print(f'Led {start_time}-{current_end} second')
-        print(f'{seconds} send command is {cmd}')
-
-        seconds+=1
-        if seconds>=start_time and seconds<=current_end:
-            cmd = '1'
-        else:
-            cmd = '0'
-
-        if seconds>60:
-            seconds=1
-            current_end-=1
-
-        if current_end<min_end_time:
-            current_end=end_time
-        
-        client.publish(topic, cmd)
-
-        time.sleep(1)
-
-topic_name = questionary.text("Topic:").ask()
-connection.write(topic_name.encode())
-start_loop(topic_name)
-
+min_time = 10  
+led_time = 20 
+while True: 
+    state = "d" 
+    client.publish("topic_esp/command", state) 
+    print(f"publish state is {state}") 
+    time.sleep(led_time) 
+    led_time = max(min_time, led_time - 1) 
+    
+    state = "u" 
+    client.publish("topic_esp/command", state) 
+    print(f"publish state is {state}") 
+    time.sleep(60 - led_time)
