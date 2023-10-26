@@ -1,7 +1,7 @@
-String ssid_AP = "ESP_WIFI_best";
+String ssid_AP = "ESP_WIFI_BEST";
 String ssid_pass = "qwerty123";
 
-char* ssid_client = "";
+char* ssid_client = ""; //hot spot info
 char* pass_client = "";
 
 int web_port = 80;
